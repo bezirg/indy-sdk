@@ -13,6 +13,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate prettytable;
 
+extern crate base58;
+
 #[macro_use]
 mod utils;
 mod command_executor;
@@ -22,7 +24,7 @@ mod libindy;
 
 use command_executor::CommandExecutor;
 
-use commands::{common, did, ledger, pool, wallet};
+use commands::{common, did, ledger, pool, wallet, crypto};
 
 use linefeed::{Reader, ReadResult, Terminal};
 use linefeed::complete::{Completer, Completion};
@@ -90,6 +92,10 @@ fn build_executor() -> CommandExecutor {
         .add_command(ledger::pool_config_command::new())
         .add_command(ledger::pool_upgrade_command::new())
         .add_command(ledger::custom_command::new())
+        .finalize_group()
+        .add_group(crypto::group::new())
+        .add_command(crypto::encrypt::new())
+        .add_command( crypto::decrypt::new())
         .finalize_group()
         .finalize()
 }

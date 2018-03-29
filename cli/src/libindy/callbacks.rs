@@ -4,10 +4,12 @@ use utils::sequence::SequenceUtils;
 
 use libc::c_char;
 
+use std::slice;
 use std::collections::HashMap;
 use std::ffi::CStr;
 use std::sync::Mutex;
 use std::sync::mpsc::{channel, Receiver};
+use base58::ToBase58;
 
 pub fn _closure_to_cb_ec() -> (Receiver<ErrorCode>, i32,
                                Option<extern fn(command_handle: i32,
@@ -110,6 +112,76 @@ pub fn _closure_to_cb_ec_string_string() -> (Receiver<(ErrorCode, String, String
         let str1 = unsafe { CStr::from_ptr(str1).to_str().unwrap().to_string() };
         let str2 = unsafe { CStr::from_ptr(str2).to_str().unwrap().to_string() };
         cb(err, str1, str2)
+    }
+
+    let mut callbacks = CALLBACKS.lock().unwrap();
+    let command_handle = SequenceUtils::get_next_id();
+    callbacks.insert(command_handle, closure);
+
+    (receiver, command_handle, Some(_callback))
+}
+
+
+pub fn _closure_to_cb_ec_message58() -> (Receiver<(ErrorCode, String)>, i32,
+                                             Option<extern fn(command_handle: i32,
+                                                              err: ErrorCode,
+                                                              encrypted_msg: *const u8,
+                                                              encrypted_len: u32)>) {
+
+    let (sender, receiver) = channel();
+
+    lazy_static! {
+        static ref CALLBACKS: Mutex < HashMap < i32, Box < FnMut(ErrorCode, String) + Send > >> = Default::default();
+    }
+
+
+    let closure = Box::new(move |err, val1| {
+        sender.send((err, val1)).unwrap();
+    });
+
+    extern "C" fn _callback(command_handle: i32, err: ErrorCode, msg: *const u8, len: u32) {
+        let mut callbacks = CALLBACKS.lock().unwrap();
+        let mut cb = callbacks.remove(&command_handle).unwrap();
+        let str = unsafe {
+            let _slice = slice::from_raw_parts(msg,len as usize);
+            _slice.to_base58()
+        };
+        cb(err, str)
+    }
+
+    let mut callbacks = CALLBACKS.lock().unwrap();
+    let command_handle = SequenceUtils::get_next_id();
+    callbacks.insert(command_handle, closure);
+
+    (receiver, command_handle, Some(_callback))
+}
+
+
+pub fn _closure_to_cb_ec_message() -> (Receiver<(ErrorCode, String)>, i32,
+                                         Option<extern fn(command_handle: i32,
+                                                          err: ErrorCode,
+                                                          msg: *const u8,
+                                                          len: u32)>) {
+    let (sender, receiver) = channel();
+
+    lazy_static! {
+        static ref CALLBACKS: Mutex < HashMap < i32, Box < FnMut(ErrorCode, String) + Send > >> = Default::default();
+    }
+
+
+    let closure = Box::new(move |err, val1| {
+        sender.send((err, val1)).unwrap();
+    });
+
+    extern "C" fn _callback(command_handle: i32, err: ErrorCode, msg: *const u8, len: u32) {
+        let mut callbacks = CALLBACKS.lock().unwrap();
+        let mut cb = callbacks.remove(&command_handle).unwrap();
+        let str = unsafe {
+            let _slice = slice::from_raw_parts(msg, len as usize);
+            let vec = Vec::from(_slice);
+            String::from_utf8(vec).unwrap()
+        };
+        cb(err, str)
     }
 
     let mut callbacks = CALLBACKS.lock().unwrap();
