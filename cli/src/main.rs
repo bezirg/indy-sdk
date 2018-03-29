@@ -96,6 +96,7 @@ fn build_executor() -> CommandExecutor {
         .add_group(crypto::group::new())
         .add_command(crypto::encrypt::new())
         .add_command( crypto::decrypt::new())
+        .add_command(crypto::compose_key::new())
         .finalize_group()
         .finalize()
 }

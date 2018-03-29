@@ -3,10 +3,43 @@ use commands::*;
 
 use libindy::crypto::Crypto;
 
+
 pub mod group {
     use super::*;
 
     command_group!(CommandGroupMetadata::new("crypto", "Crypto management commands"));
+}
+
+pub mod compose_key{
+    use base58::FromBase58;
+    use base58::ToBase58;
+    use super::*;
+
+    command!(CommandMetadata::build("comp", "compose the key from its two base58 parts")
+                .add_required_param("did", "First part")
+                .add_required_param("ver", "Second part")
+                .add_example("crypto comp did=Th7MpTaRZVRYnPiabds81Y  ver=~7TYfekw4GUagBnBVCqPjiC")
+                .finalize()
+    );
+
+    fn execute (_ctx: &CommandContext, params: &CommandParams) -> Result<(), ()>
+    {
+        let did58 = get_str_param("did", params).map_err(error_err!())?;
+        let mut ver58 = get_str_param("ver", params).map_err(error_err!())?;
+
+        ver58 =   if ver58.starts_with("~") { &ver58[1..] } else { ver58 } ;
+
+        let mut did = did58.from_base58().unwrap();
+        let mut ver = ver58.from_base58().unwrap();
+
+        did.append(&mut ver); // + ver.concat()
+
+        let full_key = did.to_base58();
+
+        Ok(println_succ!("\n{}\n", full_key))
+
+
+    }
 }
 
 pub mod encrypt {
