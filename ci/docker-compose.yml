@@ -2,7 +2,7 @@ version: '2'
 services:
   indy_pool:
     build:
-      context: ../../ci/
+      context: .
       dockerfile: indy-pool.dockerfile
       args:
         pool_ip: '10.0.0.2'
