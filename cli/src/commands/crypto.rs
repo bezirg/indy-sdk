@@ -11,8 +11,9 @@ pub mod group {
 }
 
 pub mod compose_key{
-    use base58::FromBase58;
-    use base58::ToBase58;
+
+    use rust_base58::{ToBase58, FromBase58};
+
     use super::*;
 
     command!(CommandMetadata::build("comp", "compose the key from its two base58 parts")
@@ -120,7 +121,7 @@ pub mod decrypt_dh
         trace!(r#"Crypto::decrypt_dh return: {:?}"#, res);
 
         let res = match res {
-            Ok((decoded_msg, their_key)) => Ok(println_succ!("message decrypted \n\n{}\nremote key used {}\n", decoded_msg, their_key)),
+            Ok((decoded_msg, their_key)) => Ok(println_succ!("message decrypted \n\n{}\n\nremote key used {}\n", decoded_msg, their_key)),
             Err(err) => Err(println_err!("Indy SDK error occurred {:?}", err)),
         };
 

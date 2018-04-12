@@ -9,7 +9,7 @@ use std::collections::HashMap;
 use std::ffi::CStr;
 use std::sync::Mutex;
 use std::sync::mpsc::{channel, Receiver};
-use base58::ToBase58;
+use rust_base58::ToBase58;
 
 pub fn _closure_to_cb_ec() -> (Receiver<ErrorCode>, i32,
                                Option<extern fn(command_handle: i32,

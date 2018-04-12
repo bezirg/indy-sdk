@@ -13,7 +13,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate prettytable;
 
-extern crate base58;
+extern crate rust_base58;
+
 
 #[macro_use]
 mod utils;

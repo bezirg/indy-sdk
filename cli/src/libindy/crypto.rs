@@ -4,7 +4,7 @@ use super::{ErrorCode,IndyHandle};
 use libc::c_char;
 use std::ffi::CString;
 
-use base58::FromBase58;
+use rust_base58::FromBase58;
 
 pub struct Crypto {}
 
