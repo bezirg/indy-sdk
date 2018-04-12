@@ -136,22 +136,33 @@ pub mod encrypt {
     use super::*;
 
     command!(CommandMetadata::build("enc", "Encrypt anonymously")
-                .add_required_param("key", "Validation key to encrypt with")
+                .add_required_param("did", "DID to use to encrypt")
                 .add_required_param("msg", "Message text")
-                .add_example("crypto enc  key=VsKV7grR1BUE29mG2Fm2kX msg={ did: XXXXXXXXXXXXX ; nonce: 123456789 } ")
+                .add_example("crypto enc  did=VsKV7grR1BUE29mG2Fm2kX msg={ did: XXXXXXXXXXXXX ; nonce: 123456789 } ")
                 .finalize()
     );
 
     fn execute(ctx: &CommandContext, params: &CommandParams) -> Result<(), ()> {
         trace!("execute >> ctx {:?} params {:?}", ctx, params);
 
-        let key = get_str_param("key", params).map_err(error_err!())?;
         let msg = get_str_param("msg", params).map_err(error_err!())?;
+        let did = get_str_param("did", params).map_err(error_err!())?;
+
+
+        let pool_handle = ensure_connected_pool_handle(&ctx)?;
+        let wallet_handle =
+            match get_opened_wallet(ctx){
+                Some((handle, _)) => handle,
+                None => {
+                    return Err(println_err!("No wallets opened"))
+                }
+            };
+
+        let key = Crypto::get_key_for_did(pool_handle,wallet_handle,did).unwrap();
 
         trace!(r#"Crypto::encrypt try: key {}, msg {:?}"#, key, msg);
 
-
-        let res = Crypto::encrypt(key, msg);
+        let res = Crypto::encrypt(key.as_str(), msg);
 
         trace!(r#"Crypto::encrypt return: {:?}"#, res);
 
@@ -173,9 +184,9 @@ pub mod decrypt{
 
     command!(CommandMetadata::build("dec", "Decrypt anonymously")
                 //.add_main_param("name", "The name of the wallet containing key")
-                .add_required_param("key", "The validation key to fetch the secret")
+                .add_required_param("did", "DID to use")
                 .add_required_param("msg", "Cipher text")
-                .add_example("crypto enc  wallet1 key=VsKV7grR1BUE29mG2Fm2kX msg=... ")
+                .add_example("crypto enc  did=VsKV7grR1BUE29mG2Fm2kX msg=... ")
                 .finalize()
     );
 
@@ -184,22 +195,24 @@ pub mod decrypt{
 
         //let wallet_name = get_str_param("name", params).map_err(error_err!())?;
 
-        let key = get_str_param("key", params).map_err(error_err!())?;
+        let did = get_str_param("did", params).map_err(error_err!())?;
         let msg = get_str_param("msg", params).map_err(error_err!())?;
 
-
+        let pool_handle = ensure_connected_pool_handle(&ctx)?;
         let wallet_handle =
             match get_opened_wallet(ctx){
-               Some((handle, _)) => handle,
-               None => {
-                   return Err(println_err!("No wallets opened"))
-               }
+                Some((handle, _)) => handle,
+                None => {
+                    return Err(println_err!("No wallets opened"))
+                }
             };
+
+        let key = Crypto::get_key_for_did(pool_handle,wallet_handle,did).unwrap();
 
 
         trace!(r#"Crypto::decrypt try: key {}, msg {:?}"#, key, msg);
 
-        let res = Crypto::decrypt(wallet_handle, key, msg);
+        let res = Crypto::decrypt(wallet_handle, key.as_str(), msg);
 
         trace!(r#"Crypto::decrypt return: {:?}"#, res);
 

@@ -81,7 +81,19 @@ impl Crypto {
         super::results::result_to_string_string(err, receiver)
     }
 
+    pub fn get_key_for_did(pool_handle: IndyHandle, wallet_handle: IndyHandle, did: &str ) -> Result<String,ErrorCode>
+    {
+        let (receiver, command_handle, cb) =  super::callbacks::_closure_to_cb_ec_string();
 
+        let did = CString::new(did).unwrap();
+
+        let err = unsafe {
+            indy_key_for_did(command_handle,pool_handle,wallet_handle,did.as_ptr(),cb)
+        };
+
+        super::results::result_to_string(err, receiver)
+
+    }
 
 }
 
@@ -128,4 +140,14 @@ extern {
                                                         their_vk: *const c_char,
                                                         msg_data: *const u8,
                                                         msg_len: u32)>) -> ErrorCode;
+
+    pub fn indy_key_for_did(command_handle: i32,
+                                   pool_handle: i32,
+                                   wallet_handle: i32,
+                                   did: *const c_char,
+                                   cb: Option<extern fn(xcommand_handle: i32,
+                                                        err: ErrorCode,
+                                                        key: *const c_char)>) -> ErrorCode;
+
+
 }
