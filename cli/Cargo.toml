@@ -2,6 +2,7 @@
 name = "indy-cli"
 version = "0.1.0"
 authors = ["Vyacheslav Gudkov <vyacheslav.gudkov@dsr-company.com>"]
+links = "libindy"
 
 [dependencies]
 ansi_term = "0.10"
@@ -20,3 +21,7 @@ serde_derive = "1.0"
 term = "0.4.6"
 rpassword = "1.0.0"
 rust-base58 = "*"
+
+[patch.crates-io]
+nix = { path = "/home/oleg/Projects/Rust/nix" }
+

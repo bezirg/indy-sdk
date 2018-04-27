@@ -8,6 +8,9 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     println!("target={}", target);
 
+    println!(r"cargo:rustc-link-search=../libindy/target/{}/debug", target);
+    println!(r"cargo:rustc-link-search=/usr/local/ncursesw/lib");
+
     if target.find("-windows-").is_some() {
         println!("cargo:rustc-link-lib=ssleay32");
         println!("cargo:rustc-link-lib=zmq");
