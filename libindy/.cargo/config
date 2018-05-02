@@ -1,0 +1,8 @@
+[build]
+target = "x86_64-linux-android"
+
+[target.x86_64-linux-android]
+linker = "/home/oleg/x86_64_api_26_toolchain/bin/x86_64-linux-android-clang"
+
+
+
