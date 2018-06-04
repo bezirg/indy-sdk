@@ -1,14 +1,45 @@
 use std::env;
 use std::path::PathBuf;
+use std::collections::HashMap;
+use std::sync::Mutex;
+
+pub const INDY_HOME_PATH : &'static str = "INDY_HOME_PATH";
+
+
+lazy_static! {
+    static ref ENV : Mutex<HashMap<String,String>> = Default::default();
+}
+
+pub fn set_env_var(name: &str , value : String ) {
+    ENV.lock().unwrap().insert(String::from(name), value);
+}
+
+
+pub fn get_env_var(name: & str) -> String {
+    let map = ENV.lock().unwrap();
+
+    if map.contains_key(name) {
+        return map.get(name).unwrap().clone();
+    }
+    else {
+        return String::new()
+    }
+}
+
 
 pub struct EnvironmentUtils {}
 
 impl EnvironmentUtils {
+
+    // this is modified indy_home_path func
     pub fn indy_home_path() -> PathBuf {
-        // TODO: FIXME: Provide better handling for the unknown home path case!!!
-        let mut path = env::home_dir().unwrap_or(PathBuf::from("/home/indy"));
-        path.push(if cfg!(target_os = "ios") { "Documents/.indy_client" } else { ".indy_client" });
-        path
+        if get_env_var(INDY_HOME_PATH ).is_empty() {
+            let mut path = env::home_dir().unwrap_or(PathBuf::from("/home/indy"));
+            path.push(if cfg!(target_os = "ios") { "Documents/.indy_client" } else { ".indy_client" });
+            path
+        } else {
+            PathBuf::from(get_env_var(INDY_HOME_PATH ))
+        }
     }
 
     pub fn wallet_home_path() -> PathBuf {
