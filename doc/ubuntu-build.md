@@ -90,7 +90,7 @@ For manually building this can be achieved by passing `--features sodium_static`
 
    Make sure to add the libindy to the path. Using bash:
    ```
-   echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libindy/target/{BUILD TYPE}" >> ~/.bashrc
+   echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/path/to/libindy/target/{BUILD TYPE}" >> ~/.bashrc
    sudo ldconfig
    source ~/.bashrc
    ```
